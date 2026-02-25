@@ -14,17 +14,19 @@ w = 2 * np.pi * f
 # Начало на проектиране на апроксимацията чрез редове на Фурие
 # Времева стъпка 2ms, първите 1000 точки, двата полупериода на сигнала.
 t = np.linspace(0, T, 10000) 
+t_punctured = np.linspace(-T, 0, 10000)
+t_u_c = np.linspace(-4*T/12, T, 10000)
 
 # Initialize the total wave as an array of zeros
 e_a = np.zeros_like(t)
-u_c = np.zeros_like(t)
+u_c = np.zeros_like(t_u_c)
 
 
 for k in range(3):
 
     n = 2 * k + 1 # Number of our harmonic
     nw = n * w # Harmonic frequency
-    dt = (n * w * (4*T/6))  # Фазово изместване на входния ми сигнал
+    dt = (n * w * (4*T/12))  # Фазово изместване на входния ми сигнал
 
     if k == 0:
         ZL1 = 1j*nw*L 
@@ -45,9 +47,8 @@ for k in range(3):
         phase_Uc1 = np.angle(Uc1) # Фаза на токът Uc1 в радиани
         phase_Uc1_deg = np.angle((Uc1)*180/np.pi)
 
-        uC1_t = Uc1m * np.sin(nw*t + (phase_Uc1))
+        uC1_t = Uc1m * np.sin(nw*t_u_c + (phase_Uc1))
         plt.figure(2, figsize=(10,6))
-        plt.plot(t, uC1_t, label=f'Хармоник на 1 u2 ', linestyle='--', alpha=0.5)
 
 
     if k == 1:
@@ -68,9 +69,8 @@ for k in range(3):
         Uc3m = np.sqrt(2) * np.abs(Uc3) # Амплитуда на тока Uc3
         phase_Uc3 = np.angle(Uc3) # Фаза на токът Uc3 в радиани
         phase_Uc3_deg = np.angle((Uc3)*180/np.pi)  # Фаза на токът Uc3 в радиани
-        uC3_t = Uc3m * np.sin(nw*t + (phase_Uc3))
+        uC3_t = Uc3m * np.sin(nw*t_u_c + (phase_Uc3))
         plt.figure(2, figsize=(10,6))
-        plt.plot(t, uC3_t, label=f'Хармоник на 3 u2 ', linestyle='--', alpha=0.5)
 
 
     if k == 2:
@@ -95,9 +95,8 @@ for k in range(3):
         UC5m = np.sqrt(2) * np.abs(Uc5)
         phase_Uc5 = np.angle(Uc5) # Фаза на токът Uc5 в радиани
         phase_Uc5_deg = np.angle((Uc5)*180/np.pi)
-        uC5_t = UC5m * np.sin(nw*t + (phase_Uc5))
+        uC5_t = UC5m * np.sin(nw*t_u_c + (phase_Uc5))
         plt.figure(2, figsize=(10,6))
-        plt.plot(t, uC5_t, label=f'Хармоник на 5 u2 ', linestyle='--', alpha=0.5)
 
         print("\n\n")
 
@@ -155,28 +154,42 @@ for k in range(3):
         
         print(f"Total RMS Current through Resistor: {Ir:.3f} A")
         print(f"Power consumed by R: {Pr:.3f} W")
+        print(f"e_a phase is: {np.angle(e_a) * 180/np.pi} degrees")
         print("-" * 50)
 
         u_c = uC1_t + uC3_t + uC5_t 
     
-    harmonic = 4 * Em / (np.pi * n) * np.sin(n * w * t - dt)# Сумиране на хармониците в една финална вълна
+    harmonic = 4 * Em / (np.pi * n) * np.sin(n * w * t + dt)# Сумиране на хармониците в една финална вълна
     e_a += harmonic
     # Проектиране на всички съставящи хармоници
     plt.figure(1,figsize=(10, 6))
-    plt.plot(t, harmonic, label=f'Хармоник {n}', linestyle='--', alpha=0.5)
 
 # Графика на входното напрежение E(t)
+plt.axis([-T/2, T, -150, 150])
 plt.plot(t, e_a, label='Апроксимиран Сигнал', color='black', linewidth=2) # Резултатна вълна от Фурие апроксимацията
-plt.plot(t, Em * np.sign(np.sin(w * t + dt)), label='Идеален Сигнал', color='red', linestyle=':', alpha=0.3) # Идеална правоъгълна вълна
+plt.plot(t_punctured, e_a, linestyle='--',color='black', linewidth=2) # Резултатна вълна от Фурие апроксимацията
+#plt.plot(t_1, Em * np.sign(np.sin(w * t - dt)), label='Идеален Сигнал', color='red', linestyle=':', alpha=0.5) # Идеална правоъгълна ОТ -Т до 0
+#plt.plot(t, Em * np.sign(np.sin(w * t - dt)), label='Идеален Сигнал', color='red', linestyle=':', alpha=0.5) # Идеална правоъгълна ОТ 0 до Т
+plt.axvline(0, color='blue', linewidth=1)
+plt.axvline(-4*T/12, color='blue', linewidth=1)
+plt.hlines(-100, -4*T/12, 0, color='orange', linewidth=2)
+# 'x' слага хиксчета в двата края на отсечката
+plt.plot([-4*T/12, 0], [-100, -100], color='orange', linewidth=2, marker='x', markersize=8)
+plt.annotate(r'$\psi_{e_A} = -120^\circ$', 
+             xy=(-2*T/12, -95), 
+             xytext=(0, 10),          # Отместване с 10 точки нагоре
+             textcoords='offset points', 
+             ha='center', 
+             fontsize=14)
 
 plt.title('Фурие Апроксимация')
 plt.xlabel('Време [ms]')
 plt.ylabel('Амплитуда [V]')
 plt.legend(loc='upper right', ncol=2) # ncol=2 keeps the legend tidy
 plt.grid(True, alpha=0.3)
-
 plt.figure(2)
-plt.plot(t, u_c, label='Total Voltage u_c', color='black', linewidth=2)
+plt.axis([-4*T/12, T, -200, 200])
+plt.plot(t_u_c, u_c, label='Total Voltage u_c', color='black', linewidth=2)
 plt.title('Графика на напрежението U2')
 plt.xlabel('Време [ms]')
 plt.ylabel('Амплитуда [V]')
