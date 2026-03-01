@@ -175,7 +175,7 @@ plt.axvline(-4*T/12, color='blue', linewidth=1)
 plt.hlines(-100, -4*T/12, 0, color='orange', linewidth=2)
 # 'x' слага хиксчета в двата края на отсечката
 plt.plot([-4*T/12, 0], [-100, -100], color='orange', linewidth=2, marker='x', markersize=8)
-plt.annotate(r'$\psi_{e_A} = -120^\circ$', 
+plt.annotate(r'$\psi_{e_A} = \frac{4T}{12}$', 
              xy=(-2*T/12, -95), 
              xytext=(0, 10),          # Отместване с 10 точки нагоре
              textcoords='offset points', 
